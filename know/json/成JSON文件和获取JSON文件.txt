@@ -1,0 +1,48 @@
+http://onestopweb.iteye.com/blog/2319608
+首先定义一个数组，然后遍历数据表，把相应的数据放到数组中，最后通过json_encode()转化数组
+json_encode() 函数的功能是将数值转换成 JSON 数据存储格式。
+
+putjson.php
+
+Java代码  收藏代码
+<?php  
+// 生成一个PHP数组  
+$data = array();  
+$data[0] = array('1','吴者然','onestopweb.cn');  
+$data[1] = array('2','何开','iteye.com');  
+// 把PHP数组转成JSON字符串  
+$json_string = json_encode($data);  
+// 写入文件  
+file_put_contents('test.json', $json_string);  
+?>  
+ 
+
+有同名的 JSON 文件则覆盖，没有则创建。
+
+生成或覆盖的 JSON 如下：
+
+Java代码  收藏代码
+[["1","\u5434\u8005\u7136","onestopweb.cn"],["2","\u4f55\u5f00","iteye.com"]]  
+ 
+
+然后，把 JSON 文件中的数据读取到PHP变量中。
+
+getjson.php
+
+Java代码  收藏代码
+<meta charset="UTF-8">  
+<?php  
+// 从文件中读取数据到PHP变量  
+$json_string = file_get_contents('test.json');  
+// 把JSON字符串转成PHP数组  
+$data = json_decode($json_string, true);  
+// 显示出来看看  
+var_dump($data);  
+echo '<br><br>';  
+print_r($data);  
+echo '<br><br>';  
+echo '编号：'.$data[0][0].' 姓名：'.$data[0][1].' 网址：'.$data[0][2];  
+echo '<br>';  
+echo '编号：'.$data[1][0].' 姓名：'.$data[1][1].' 网址：'.$data[1][2];  
+?>  
+  

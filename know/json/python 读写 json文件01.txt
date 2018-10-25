@@ -1,0 +1,224 @@
+https://zhuanlan.zhihu.com/p/27917664
+这周开始了实习， 由于公司的数据组使用的hadoop的数据仓库， 所以作为爬虫组的一般是把文件写入到文件中， 然后给数据组再次清洗。在选择文件的格式中， 选择了json。为什么呢？
+
+json的优势：
+
+1. 数据体积方面。
+
+JSON相对于XML来讲，数据的体积小，传递的速度更快些。
+
+
+
+2. 传输速度方面。
+
+JSON的速度要远远快于XML
+
+
+
+3. 数据格式
+
+数据格式比较简单, 易于读写, 格式都是压缩的。
+
+
+
+4. 与python的交互使用方便
+
+json 是 k-v结构的形式,
+
+简单来说， 如果是一个key,对应一个value.中间用 : 分隔，最外面用{}包围， 不同键值对之间用逗号，隔开
+
+{‘key1’: 'value1', 'key2': 'value2', 'key3': 'value3'}
+
+如果有一个Key对应着多个value的情况，用[]把对应的所有value包括起来。
+
+{'key1': ['v11', 'v12', 'v13'], 'key2':'v22'}
+
+复杂一点的还有这样的，不过其实原理都一样。
+
+{
+     
+ 
+"people":[
+         
+{
+ 
+"firstName": "Brett",
+             
+"lastName":"McLaughlin"
+         
+},
+        
+{
+             
+"firstName":"Jason",
+ 
+"lastName":"Hunter"
+}
+]
+}
+
+
+json是什么呢？
+
+是一种轻量级的数据交换格式。
+完全独立于编程语言的文本格式来存储和表示数据。
+简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言。 易于人阅读和编写，易于机器解析和生成，并有效地提升网络传输效率。
+json JavaScript Object Notation（JS对象标记）和JavaScript 的关系
+
+JSON格式在语法上与创建JavaScript对象的代码相同。由于这种相似性，JavaScript程序可以轻松地将JSON数据转换为JavaScript对象。JavaScript是一种语言， 而json终其还是一种文本格式，是一堆字符串。
+
+
+
+那为什么我们用json来存储python爬虫的数据呢？
+
+了解Python的同学， 应该可以发现了，json的数据格式其实和python的字典其实是异曲同工啊。但是由于json是文本格式， 我们要用python去操纵它，首先需要把这种格式转换为python中的字典。
+
+with open('finance/finance_company.json', encoding='utf-8') as f:
+    line = f.readline()
+    print(type(line))
+    f.close()
+
+
+输出结果：
+
+<class 'str'>
+可以看出来，我们从json格式中读出来为str类型。当然了，我们读的文本，不是字符串是什么。。。
+
+
+
+然后我们调用json库的loads方法。
+
+json.load(fp, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)
+
+object_hook是一个可选的函数，它将被任何对象字面值解码（dict）的结果调用。将使用object_hook的返回值而不是dict。该特征可以用于实现定制解码器（例如，JSON-RPC类提示）。
+
+object_pairs_hook是一个可选的函数，它将使用任何对象字面值的结果进行调用，并使用对的有序列表进行解码。将使用object_pairs_hook的返回值，而不是dict。该特征可以用于实现依赖于键和值对被解码的顺序的自定义解码器（例如，collections.OrderedDict()将记住插入的顺序）。如果还定义了object_hook，则object_pairs_hook优先。
+
+parse_float（如果指定）将使用要解码的每个JSON浮点的字符串进行调用。默认情况下，这相当于float(num_str)。这可以用于使用另一个数据类型或解析器为JSON浮动（例如。decimal.Decimal）。
+
+parse_int（如果指定）将使用要解码的每个JSON int的字符串进行调用。默认情况下，这相当于int(num_str)。这可以用于使用另一个数据类型或解析器为JSON整数（例如。float）。
+
+parse_constant如果指定，将使用以下字符串之一调用：'-Infinity'，'Infinity'，'NaN'。这可以用于引发异常，如果遇到无效的JSON数字。
+
+
+
+在版本3.1中更改： parse_constant不会在“null”，“true”和“false”上调用。
+
+
+
+要使用自定义JSONDecoder子类，请使用cls kwarg；否则使用JSONDecoder。额外的关键字参数将被传递给类的构造函数。
+
+json.loads(s, encoding=None, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, **kw)
+
+它呢， 除了多了一个编码参数， 其余的都与json.load一样。虽然参数很多，但是不用慌张，因为除非特殊情况， 否则我们都是用不到的.
+
+现在只需要了解json.load用来加载文件， 而json.loads用来加载字符串(很明显，因为多了个s(string))
+
+import json
+
+with open('finance/finance_company.json', encoding='utf-8') as f:
+    line = f.readline()
+    d = json.loads(line)
+    print(type(d))
+    f.close()
+
+<class 'dict'>
+我的这个写法很不规范哈。只读取了第一行文本， 就把文件关闭了。主要是想给大家做个示范。现在我们可以看到我们已经把读出来的json文本转换成python的数据结构。现在我们就可以用python语言随意操作它了。
+
+
+
+读json文件
+
+现在我的json文件第一行是这样的：  	
+{"name": "异享金融", "company_url": "http://www.yixiangjinrong.com", "telphone": "0371-55056647", "crawl_time": "2017-07-13 16:11:16"}
+我要用python打印到控制台输出上。
+
+第一步：
+
+还是要把json文本转换为python可以操作的数据结构。
+
+import json
+
+# 转换文件
+s1 = json.load('filename')
+
+#　转换字符串
+s2 = json.loads(str)
+第二步：
+
+我们只需按照操作字典的方法取值。
+
+import json
+
+with open('finance/finance_company.json', encoding='utf-8') as f:
+    line = f.readline()
+    d = json.loads(line)
+    name = d['name']
+    company_url = d['company_url']
+    telephone = d['telphone']
+    crawl_time = d['crawl_time']
+    print(name, company_url, telephone, crawl_time)
+    f.close()
+输出结果：
+
+异享金融 http://www.yixiangjinrong.com 0371-55056647 2017-07-13 16:11:16
+这样就成功的读取了json文件啦。
+
+
+写json文件
+
+
+
+json.dump(obj, fp, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False, **kw)
+
+json模块总是产生str对象，而不是bytes对象。因此，fp.write()必须支持str输入。
+
+如果ensure_ascii为true（默认值），则输出将保证所有传入的非ASCII字符都转义。如果ensure_ascii为false，则这些字符将按原样输出。
+
+如果check_circular为false（默认值：True），则将跳过容器类型的循环引用检查，循环引用将导致OverflowError
+
+如果allow_nan为false（默认值：True），则将是ValueError序列化超出范围float值（nan，inf，-inf），严格遵守JSON规范。如果allow_nan为true，则将使用与其等效的JavaScript代码（NaN，Infinity，-Infinity）。
+
+如果缩进是非负整数或字符串，那么JSON数组元素和对象成员将以该缩进级别打印。缩进级别0，负数或""将只插入换行符。None（默认值）选择最紧凑的表示。使用正整数缩进缩进，每个级别有许多空格。如果缩进是字符串（例如"\t"），则该字符串用于缩进每个级别。
+
+如果sort_keys为真（默认值：False），则字典的输出将按键排序。
+
+ensure_ascii拿出来单独讲讲。在我使用默认的 ensure_ascii=True时， json文件变成了这样：
+{"name": "\u4e24\u53ea\u8001\u864e", "company_url": "http://www.twotiger.com/", "telphone": "010-64789918", "crawl_time": "2017-07-16 22:57:15"}
+当时纳闷了很久， 在加上ensure_ascii=Flase, 中文就成功出现啦。就是如下这样的了：
+
+{"name": "异享金融", "company_url": "http://www.yixiangjinrong.com", "telphone": "0371-55056647", "crawl_time": "2017-07-13 16:11:16"}
+因为该方法把我们的中文自动转义了， 变成了ASCII码， 所以导致了中文看着错乱了。加上这句就好了。
+
+如何读取完整的文件
+
+上面主要示例了json的使用。但是在实际开发过程中我们是需要对这个文件进行读取的。下面我们看看如何读取。
+
+我们都应该知道python读取文件有三种方法。
+
+read(), readline(), radlines()
+
+read()直接读取出字符串，并且字符串或者字符对象返回。
+
+readline() 读取文本中的一行
+
+readlines() 读取文本中的所有内容并放入缓存区。
+
+下面是使用的readline读取整个文本示例：
+
+with open(file_path, 'r', encoding='utf-8') as f:
+        try:
+            while True:
+                line = f.readline()
+                if line:
+                    r = json.loads(line)
+                    # print(r)
+                else:
+                    break
+        except:
+            f.close()
+
+
+这样就可以读取所有文本并解析成Python可以操作的数据模式了.
+
+以上是json模块的基本操作，谢谢大家。

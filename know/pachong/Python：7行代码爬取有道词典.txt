@@ -1,0 +1,68 @@
+https://www.zhihu.com/topic/19577498/hot
+1. 引言
+前阵子英语老师为我们准备了4000词汇的大礼包，之后连续3、4天不停地从有道词典复制粘贴中文释义。得知此事我很感动，于是希望能自动化为她完成中文释义爬取工作。
+网络爬虫是一种自动地从网上系统性地抓取数据的程序。说白了，我们手动打开一个网站浏览信息都是在“爬虫”，而且相比爬虫，人能更加灵活地筛选信息。但是让人去找一个单词的意思还好，10s内可以搞定。如果是4000个呢？几天都难弄完，还不保证不出错。这时就需要用到爬虫，用计算机代替我们完成简单重复的工作。2. 方法
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260
+
+目前爬虫的工具非常多，甚至有成型的软件。但是对于小需求而言，写段Python脚本足以应付。“技术架构”如下：
+
+用requests库的get方法向服务器请求资源。
+用bs4库对请求到的资源进行结构化分析，从中提取目标文本。
+分别解释下：2.1 requests请求资源我们用浏览器打开一个网站相当于向某个服务器请求资源，比如图片、文本。而requests可以帮助我们在伪装成一个浏览器，获取数据。requests获取的数据长啥样呢？import requests # 导入requests包
+r = requests.get('http://www.youdao.com/') # 向有道词典网站请求资源
+print(r.text) # 打印文本
+结果如下：
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260
+
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260
+
+
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="keywords" content="有道, 搜索, 词典, 翻译, 云笔记, 笔记, 惠惠网, 惠惠购物助手, 购物搜索, 图片搜索, 视频搜索, 新闻搜索, 网易有道, 在线翻译, 专业翻译"><meta name="description" content="网易旗下利用大数据技术提供移动互联网应用的子公司，过去8年，先后推出有道词典、有道翻译官、有道云笔记、惠惠网、有道推广、有道精品课、有道口语大师等系列产品，总用户量达到7亿。"><title>有道首页</title><link href="https://shared.ydstatic.com/images/favicon.ico" type="image/x-icon" rel="shortcut icon"><link rel="stylesheet" href="https://shared.ydstatic.com/dict/v2016/entry/pc3.css"><script>var _rlog = _rlog || [];
+// 指定 product id
+_rlog.push(["_setAccount" , "dictweb"]);
+这只截取部分，后面还有很多就不放了。但这乱七八糟的东西与我们在浏览器上看到的赏心悦目的页面不一样啊？别急，在Chrome中右键，点击“查看网页源代码”选项，点开后如下：
+
+可以发现开始部分与requests获得的文本是一样的！但浏览器之所以为浏览器，是因为它用这些文本组织起漂亮的页面。
+
+2.2 BeautifulSoup结构化分析
+通过requests获取的文本根本没法看，那怎么找信息？其实这些文本属于html（ 超文本标记语言）。这里粗看下，似乎里面尖括号不少。百度发现，这些尖括号代表的就是文本的标签。比如：  <title>有道首页</title>
+  就定义了网页的标题。其他的尖括号的含义可以百度。但是现在的文本太过凌乱，为了更好地分析标签，我们需要借助BeautifulSoup。具体用法如下：import requests # 导入requests包
+r = requests.get('http://www.youdao.com/') # 向有道词典请求资源
+html = r.text
+soup = BeautifulSoup(html, 'html.parser') # 结构化文本soup
+print(soup.title)
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260
+结果如下：
+
+  <title>有道首页</title>
+可以看到，所谓的结构化文本(soup)，就是可以通过"."去访问内部的标签。这样我们距离小目标又进了一大步：只要知道每个单词中文释义的标签，打印下来不就好了！
+如何找到标签呢？以test这个单词为例，它在有道词典中的网址为http://www.youdao.com/w/eng/test/。在浏览器打开后，在中文释义出右键，点击“检查”选项，然后界面如下：
+
+
+可以看到，红框内就是我们要的中文释义！可以它似乎被多重标签包围。具体的小框如下：
+
+那么，我们只要找到最外层的div这个标签就行了？并非如此，因为div其实有属性！就是尖括号内的class="trans-container"，它定义了div的名为"class"的属性。而soup恰好能通过标签及其属性寻找对应文本！代码如下：
+
+import requests # 导入requests包
+from bs4 import BeautifulSoup
+r = requests.get('http://www.youdao.com/') # 向有道词典请求资源
+html = r.text
+soup = BeautifulSoup(html, 'html.parser') # 结构化文本soup
+div = soup.find(name='div', attrs={'class': 'trans-container'}) # 获取中文释义所在的标签
+print(div.get_text()) # 获取标签内文本
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260
+。
+至此，我们终于成功爬取了有道词典的中文释义！2.3 爬虫鲁棒性如果爬一两个词上面的程序大概率可以成功。但也许4000词里有的会失败，比如单词不存在，网络中断，Windows自动更新Blabla。一方面，可以判断requests是否成功获取资源以及BeautifulSoup是否成功找到目标；另一方面，最好爬完一批次自动存储，即使失败也不必从头再来。待更新...
+
+作者：THUzhangga
+链接：https://zhuanlan.zhihu.com/p/47213260

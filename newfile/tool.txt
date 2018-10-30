@@ -1,0 +1,11 @@
+Windows上实现linux命令的安装工具
+Cygwin：https://cygwin.com/install.html
+https://blog.csdn.net/chunleixiahe/article/details/55666792
+
+Windows上安装wget：
+https://eternallybored.org/misc/wget/
+https://zhuanlan.zhihu.com/p/28826000
+
+Windows上安装vim编译：wget -qO- https://raw.github.com/ma6174/vim/master/setup.sh | sh -x
+
+http://www.huangdc.com/421
